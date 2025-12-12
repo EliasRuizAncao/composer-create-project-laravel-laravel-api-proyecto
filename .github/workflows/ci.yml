@@ -5,10 +5,9 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # Etapa 1: Integración Continua (Pruebas)
+  # --- JOB 1: PRUEBAS ---
   test:
     runs-on: ubuntu-latest
-    
     steps:
     - name: Descargar código
       uses: actions/checkout@v4
@@ -16,25 +15,55 @@ jobs:
     - name: Configurar PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.4'
+        php-version: '8.4' # Versión corregida
         extensions: mbstring, xml, bcmath, sqlite3
 
     - name: Instalar Dependencias
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-    - name: Copiar archivo de entorno
+    - name: Copiar archivo .env
       run: cp .env.example .env
 
     - name: Generar Key
       run: php artisan key:generate
 
-    - name: Crear Base de Datos de prueba
+    - name: Crear Base de Datos
       run: |
         touch database/database.sqlite
         php artisan migrate --force
 
-    - name: Ejecutar Pruebas PHPUnit
+    - name: Ejecutar Pruebas
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test
+
+  # --- JOB 2: CONSTRUIR Y SUBIR ---
+  build:
+    needs: test # Solo arranca si las pruebas pasan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Login en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Construir Imagen Docker
+        # Esto usará tu usuario 'eliasruizancao' automáticamente desde los secretos
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest .
+
+      - name: Escaneo de Seguridad (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/api-laravel:latest'
+          format: 'table'
+          [cite_start]exit-code: '1' # Falla si hay vulnerabilidades críticas [cite: 31, 32]
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Subir a Docker Hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest
