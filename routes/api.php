@@ -2,13 +2,14 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TaskController; // <-- Importante: Importamos tu controlador
-
-// Ruta por defecto de usuario (la dejamos por si acaso)
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+use App\Http\Controllers\UserController; 
 
 
 
-Route::apiResource('tasks', TaskController::class);
+// Esta ÚNICA línea crea las 5 rutas del CRUD automáticamente
+Route::apiResource('users', UserController::class);
+
+// Ruta extra solo para probar si la API responde (opcional)
+Route::get('/status', function () {
+    return response()->json(['message' => 'API Online y funcionando 🚀']);
+});
