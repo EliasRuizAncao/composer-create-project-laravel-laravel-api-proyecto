@@ -86,7 +86,7 @@ jobs:
       - name: Descargar Infraestructura Externa
         uses: actions/checkout@v4
         with:
-          repository: EliasRuizAncao/infraestructura-laravel
+          repository: EliasRuizAncao/infraestructura-laravel-proyecto
           token: ${{ secrets.GH_PAT }}       # <--- AQUÍ USA TU LLAVE MAESTRA
           path: infraestructura-laravel      # <--- Lo guarda en esta carpeta para que Ansible la encuentre
 
