@@ -5,9 +5,9 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # ==========================================
+
   # ETAPA 1: TEST (Pruebas y Análisis Estático)
-  # ==========================================
+
   test:
     name: 1. Test & Analyze 
     runs-on: ubuntu-latest
@@ -20,9 +20,7 @@ jobs:
           php-version: '8.2'
           extensions: sqlite3, mbstring, xml
       
-      # CORRECCIÓN DEL ERROR DE LA IMAGEN:
-      # Usamos 'composer update' para ignorar el lock file conflictivo de tu PC
-      - name: Instalar Dependencias (Fix Lock File)
+      - name: Instalar Dependencias
         run: composer update --no-interaction --prefer-dist
 
       - name: Generar Key y Entorno
@@ -41,15 +39,12 @@ jobs:
           DB_DATABASE: database/database.sqlite
         run: php artisan test
 
-      - name: Análisis Estático (Simulación PHPStan)
-        run: echo "Analizando código estático... OK"
-
-  # ==========================================
+  
   # ETAPA 2: BUILD & SCAN (Construcción y Seguridad)
-  # ==========================================
+  
   build:
     name: 2. Build & Scan 
-    needs: test # Solo corre si Test pasa
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -63,24 +58,23 @@ jobs:
       - name: Construir Imagen
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest .
 
-      # REQUISITO PDF: Escaneo de vulnerabilidades con Trivy
       - name: Escaneo de Seguridad (Trivy Scan)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: '${{ secrets.DOCKER_USERNAME }}/api-laravel:latest'
           format: 'table'
-          exit-code: '0' # No bloqueante para la demo
+          exit-code: '0'
           severity: 'CRITICAL,HIGH'
 
       - name: Subir Imagen (Push)
         run: docker push ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest
 
-  # ==========================================
+ 
   # ETAPA 3: DEPLOY (Despliegue con Ansible)
-  # ==========================================
+
   deploy:
     name: 3. Deploy (Ansible) 
-    needs: build # Solo corre si Build pasa
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,13 +82,11 @@ jobs:
       - name: Instalar Ansible
         run: pip install ansible
 
-      - name: Configurar Llave SSH
+      # FIX DE LA LLAVE: Usamos printf para respetar saltos de línea
+      - name: Crear Llave SSH Temporal
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          printf "%s" "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
           chmod 600 key.pem
-
-      - name: Desactivar Host Check
-        run: export ANSIBLE_HOST_KEY_CHECKING=False
 
       - name: Ejecutar Playbook
         env:
