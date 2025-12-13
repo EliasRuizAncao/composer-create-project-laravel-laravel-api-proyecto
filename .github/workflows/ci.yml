@@ -7,7 +7,7 @@ on:
 jobs:
 
   
-  # ETAPA 1: TEST (Pruebas y Análisis Estático)
+  # ETAPA 1: TEST 
   
   test:
     name: 1. Test & Analyze 
