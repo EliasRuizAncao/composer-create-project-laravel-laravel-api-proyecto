@@ -81,7 +81,7 @@ jobs:
       # 1. Descargar la API (Tu repositorio actual)
       - uses: actions/checkout@v4
 
-      # 2. Descargar la Infraestructura (El OTRO repositorio) USANDO EL TOKEN
+      # 2. Descargar la Infraestructura usando el token
       - name: Descargar Infraestructura Externa
         uses: actions/checkout@v4
         with:
