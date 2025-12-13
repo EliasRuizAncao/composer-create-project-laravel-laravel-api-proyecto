@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline Completo
 
 on:
   push:
@@ -15,24 +15,21 @@ jobs:
     - name: Configurar PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.4' # Usamos 8.4 para compatibilidad
+        php-version: '8.2' # Recomiendo 8.2 para asegurar estabilidad
         extensions: mbstring, xml, bcmath, sqlite3
 
     - name: Instalar Dependencias
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
     - name: Copiar .env
-      run: cp .env.example .env
+      run: cp .env.example .env && php artisan key:generate
 
-    - name: Generar Key
-      run: php artisan key:generate
-
-    - name: Crear Base de Datos
+    - name: Crear Base de Datos de Prueba
       run: |
         touch database/database.sqlite
         php artisan migrate --force
 
-    - name: Ejecutar Pruebas
+    - name: Ejecutar Pruebas (PHPUnit)
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
@@ -40,7 +37,7 @@ jobs:
 
   # --- ETAPA 2: CONSTRUIR Y SUBIR (Build & Push) ---
   build:
-    needs: test # Solo se ejecuta si las pruebas pasan
+    needs: test # Solo si los tests pasan
     runs-on: ubuntu-latest
     steps:
       - name: Descargar código
@@ -53,7 +50,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Construir Imagen Docker
-        # Usa tu usuario automáticamente desde los secretos
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest .
 
       - name: Escaneo de Seguridad (Trivy)
@@ -61,9 +57,38 @@ jobs:
         with:
           image-ref: '${{ secrets.DOCKER_USERNAME }}/api-laravel:latest'
           format: 'table'
-          exit-code: '1' # Falla si hay vulnerabilidades críticas
+          exit-code: '1' # Falla si hay vulnerabilidades críticas (Requisito Rúbrica)
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
 
       - name: Subir a Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest
+
+  # --- ETAPA 3: DESPLIEGUE CONTINUO (CD con Ansible) ---
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código (para acceder a la carpeta infraestructura)
+        uses: actions/checkout@v4
+
+      - name: Instalar Ansible
+        run: pip install ansible
+
+      - name: Crear Llave SSH desde Secretos
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Desactivar chequeo estricto de host
+        # Esto evita que el pipeline se congele preguntando "Are you sure you want to connect?"
+        run: export ANSIBLE_HOST_KEY_CHECKING=False
+
+      - name: Ejecutar Playbook de Ansible 🚀
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: 'False'
+        run: |
+          ansible-playbook -i infraestructura-laravel/inventory \
+          infraestructura-laravel/playbook.yml \
+          --private-key key.pem \
+          --extra-vars "docker_user=${{ secrets.DOCKER_USERNAME }}"
