@@ -6,9 +6,9 @@ on:
 
 jobs:
 
-  # ==========================================
+  
   # ETAPA 1: TEST (Pruebas y Análisis Estático)
-  # ==========================================
+  
   test:
     name: 1. Test & Analyze 
     runs-on: ubuntu-latest
@@ -40,9 +40,9 @@ jobs:
           DB_DATABASE: database/database.sqlite
         run: php artisan test
 
-  # ==========================================
+  
   # ETAPA 2: BUILD & SCAN (Construcción y Seguridad)
-  # ==========================================
+  
   build:
     name: 2. Build & Scan 
     needs: test
@@ -70,9 +70,9 @@ jobs:
       - name: Subir Imagen (Push)
         run: docker push ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest
 
-  # ==========================================
+  
   # ETAPA 3: DEPLOY (Multi-Repo con Token)
-  # ==========================================
+  
   deploy:
     name: 3. Deploy (Ansible) 
     needs: build
