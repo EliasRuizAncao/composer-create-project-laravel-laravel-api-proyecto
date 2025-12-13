@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    # IMPORTANTE: Asegúrate de que este sea tu usuario real de Docker Hub
+    image: eliasruizancao/api-laravel:latest
+    container_name: laravel_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_KEY: 'base64:TuKeyGeneradaAquiOVariableDeEntorno' # Opcional si ya está en la imagen
+    volumes:
+      - ./database:/var/www/html/database # Para que no se borren los datos de SQLite
