@@ -92,7 +92,7 @@ jobs:
       - name: Instalar Ansible
         run: pip install ansible
 
-      # FIX DE LA LLAVE: Usamos 'echo' para respetar el formato del secreto
+      
       - name: Crear Llave SSH Temporal
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
