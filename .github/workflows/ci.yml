@@ -9,7 +9,7 @@ jobs:
   # ETAPA 1: TEST (Pruebas y Análisis Estático)
   # ==========================================
   test:
-    name: 1. Test & Analyze 🧪
+    name: 1. Test & Analyze 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
   # ETAPA 2: BUILD & SCAN (Construcción y Seguridad)
   # ==========================================
   build:
-    name: 2. Build & Scan 🛡️
+    name: 2. Build & Scan 
     needs: test # Solo corre si Test pasa
     runs-on: ubuntu-latest
     steps:
@@ -79,7 +79,7 @@ jobs:
   # ETAPA 3: DEPLOY (Despliegue con Ansible)
   # ==========================================
   deploy:
-    name: 3. Deploy (Ansible) 🚀
+    name: 3. Deploy (Ansible) 
     needs: build # Solo corre si Build pasa
     runs-on: ubuntu-latest
     steps:
