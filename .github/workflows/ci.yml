@@ -6,11 +6,11 @@ on:
 
 jobs:
 
-  
+  # ==========================================
   # ETAPA 1: TEST (Pruebas y Análisis Estático)
-  
+  # ==========================================
   test:
-    name: 1. Test & Analyze 
+    name: 1. Test & Analyze 🧪
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,11 +40,11 @@ jobs:
           DB_DATABASE: database/database.sqlite
         run: php artisan test
 
-  
+  # ==========================================
   # ETAPA 2: BUILD & SCAN (Construcción y Seguridad)
-  
+  # ==========================================
   build:
-    name: 2. Build & Scan 
+    name: 2. Build & Scan 🛡️
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -70,11 +70,11 @@ jobs:
       - name: Subir Imagen (Push)
         run: docker push ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest
 
-  
+  # ==========================================
   # ETAPA 3: DEPLOY (Multi-Repo con Token)
-  
+  # ==========================================
   deploy:
-    name: 3. Deploy (Ansible) 
+    name: 3. Deploy (Ansible) 🚀
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -82,20 +82,20 @@ jobs:
       - uses: actions/checkout@v4
 
       # 2. Descargar la Infraestructura (El OTRO repositorio) USANDO EL TOKEN
-      # IMPORTANTE: Revisa que el nombre "EliasRuizAncao/infraestructura-laravel" sea correcto
       - name: Descargar Infraestructura Externa
         uses: actions/checkout@v4
         with:
-          repository: EliasRuizAncao/infraestructura-laravel-proyecto
-          token: ${{ secrets.GH_PAT }}       # <--- AQUÍ USA TU LLAVE MAESTRA
-          path: infraestructura-laravel      # <--- Lo guarda en esta carpeta para que Ansible la encuentre
+          repository: EliasRuizAncao/infraestructura-laravel-proyecto # <--- TU REPO CORRECTO
+          token: ${{ secrets.GH_PAT }}       # <--- TU LLAVE MAESTRA
+          path: infraestructura-laravel      # <--- CARPETA TEMPORAL
 
       - name: Instalar Ansible
         run: pip install ansible
 
+      # FIX DE LA LLAVE: Usamos 'echo' para respetar el formato del secreto
       - name: Crear Llave SSH Temporal
         run: |
-          printf "%s" "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
           chmod 600 key.pem
 
       - name: Ejecutar Playbook
