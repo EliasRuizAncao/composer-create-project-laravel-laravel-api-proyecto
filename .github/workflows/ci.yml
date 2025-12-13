@@ -87,7 +87,7 @@ jobs:
         with:
           repository: EliasRuizAncao/infraestructura-laravel-proyecto # <--- TU REPO CORRECTO
           token: ${{ secrets.GH_PAT }}       # <--- TU LLAVE MAESTRA
-          path: infraestructura-laravel      # <--- CARPETA TEMPORAL
+          path: infraestructura-laravel      # <--- CARPETA TEMPOR
 
       - name: Instalar Ansible
         run: pip install ansible
