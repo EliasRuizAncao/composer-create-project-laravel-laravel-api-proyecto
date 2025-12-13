@@ -11,6 +11,6 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: 'false'
-      APP_KEY: 'base64:TuKeyGeneradaAquiOVariableDeEntorno' # Opcional si ya está en la imagen
+      APP_KEY: 'base64:BW3OGhtSROOc1y5zFPDlMVAV8G2P5IHGyzls9TQAJLc=' # Opcional si ya está en la imagen
     volumes:
       - ./database:/var/www/html/database # Para que no se borren los datos de SQLite
