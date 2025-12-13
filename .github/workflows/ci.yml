@@ -41,7 +41,7 @@ jobs:
         run: php artisan test
 
   
-  # ETAPA 2: BUILD & SCAN (Construcción y Seguridad)
+  # ETAPA 2: (Construcción y Seguridad)
   
   build:
     name: 2. Build & Scan 
