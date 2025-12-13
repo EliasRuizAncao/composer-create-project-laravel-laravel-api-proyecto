@@ -71,7 +71,7 @@ jobs:
         run: docker push ${{ secrets.DOCKER_USERNAME }}/api-laravel:latest
 
   
-  # ETAPA 3: DEPLOY (Multi-Repo con Token)
+  # ETAPA 3: DEPLOY 
   
   deploy:
     name: 3. Deploy (Ansible) 
